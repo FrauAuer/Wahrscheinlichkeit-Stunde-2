@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wie oft ziehst du welche Farbe?</title>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --card: #ffffff;
+      --border: #d1d5db;
+      --text: #111827;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    }
+    h1, h2 { margin-top: 0; }
+    .row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .field { min-width: 240px; flex: 1; }
+    label { display: block; margin-bottom: 6px; font-weight: 700; }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #111827;
+      color: white;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 800px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+    .stat {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .stat .label { color: var(--muted); font-size: 0.95rem; }
+    .stat .value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
+    .chart {
+      height: 420px;
+      display: flex;
+      align-items: end;
+      justify-content: space-around;
+      gap: 12px;
+      padding: 16px 8px 8px;
+      border-bottom: 2px solid #111827;
+      margin-top: 20px;
+    }
+    .bar-wrap {
+      flex: 1;
+      max-width: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 8px;
+      height: 100%;
+    }
+    .bar-value { font-weight: 700; min-height: 24px; }
+    .bar {
+      width: 100%;
+      min-height: 2px;
+      background: linear-gradient(180deg, #4b5563, #111827);
+      border-radius: 12px 12px 0 0;
+    }
+    .bar.blue {
+      background: linear-gradient(180deg, #60a5fa, #2563eb);
+    }
+    .bar.yellow {
+      background: linear-gradient(180deg, #fde047, #eab308);
+    }
+    .bar-label { font-weight: 700; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .small { color: var(--muted); }
+    .hint { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Wie oft ziehst du welche Farbe?</h1>
+      <div class="row">
+        <div class="field">
+          <label for="lessonCode">Passwort</label>
+          <input id="lessonCode" type="text" placeholder="12" />
+        </div>
+        <div>
+          <button id="loadBtn">anzeigen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Unsere Ergebnisse als Säulendiagramm</h2>
+      <div class="chart" id="chart"></div>
+    </div>
+
+    <div class="card">
+      <h2>Ergebnisse der Gruppen</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Gruppennummer</th>
+            <th>blau</th>
+            <th>gelb</th>
+            <th>Anzahl der Ziehungen</th>
+          </tr>
+        </thead>
+        <tbody id="groupsBody"></tbody>
+      </table>
+      <p class="small" id="emptyText">Noch keine Eingaben vorhanden.</p>
+    </div>
+    <div class="card">
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Anzahl der Gruppen</div>
+          <div class="value" id="groupCount">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Anzahl der Ziehungen</div>
+          <div class="value" id="totalRolls">0</div>
+        </div>
+ 
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { ref, onValue, off } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js';
+
+    const lessonCodeInput = document.getElementById('lessonCode');
+    const loadBtn = document.getElementById('loadBtn');
+    const groupCount = document.getElementById('groupCount');
+    const totalRolls = document.getElementById('totalRolls');
+    const chart = document.getElementById('chart');
+    const groupsBody = document.getElementById('groupsBody');
+    const emptyText = document.getElementById('emptyText');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    lessonCodeInput.value = urlParams.get('lesson') || '';
+
+    let currentRef = null;
+    let currentCallback = null;
+
+    function renderChart(totals) {
+      chart.innerHTML = '';
+      const max = Math.max(...totals, 1);
+      totals.forEach((value, index) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'bar-wrap';
+
+        const valueLabel = document.createElement('div');
+        valueLabel.className = 'bar-value';
+        valueLabel.textContent = value;
+
+        const bar = document.createElement('div');
+        bar.className = index === 0 ? 'bar blue' : 'bar yellow';
+        bar.style.height = `${(value / max) * 300 + 6}px`;
+
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = String(index + 1);
+
+        wrap.appendChild(valueLabel);
+        wrap.appendChild(bar);
+        wrap.appendChild(label);
+        chart.appendChild(wrap);
+      });
+    }
+
+    function renderTable(groups) {
+      groupsBody.innerHTML = '';
+      emptyText.style.display = groups.length ? 'none' : 'block';
+
+      groups
+        .sort((a, b) => (a.groupName || '').localeCompare(b.groupName || '', 'de'))
+        .forEach(group => {
+          const tr = document.createElement('tr');
+          const counts = group.counts || {};
+          tr.innerHTML = `
+            <td>${group.groupName || '–'}</td>
+            <td>${counts['1'] || 0}</td>
+            <td>${counts['2'] || 0}</td>
+            <td>${group.total || 0}</td>
+          `;
+          groupsBody.appendChild(tr);
+        });
+    }
+
+    function loadLesson() {
+      const lessonCode = lessonCodeInput.value.trim().toLowerCase();
+      if (!lessonCode) return;
+
+      if (currentRef && currentCallback) {
+        off(currentRef, 'value', currentCallback);
+      }
+
+      currentRef = ref(db, `lessons/${lessonCode}/groups`);
+      currentCallback = (snapshot) => {
+        const data = snapshot.val() || {};
+        const groups = Object.values(data);
+
+        const totals = [0, 0];
+        let total = 0;
+        groups.forEach(group => {
+          const counts = group.counts || {};
+          for (let i = 1; i <= 2; i++) {
+            totals[i - 1] += Number(counts[String(i)] || 0);
+          }
+          total += Number(group.total || 0);
+        });
+
+        groupCount.textContent = groups.length;
+        totalRolls.textContent = total;
+        renderChart(totals);
+        renderTable(groups);
+      };
+
+      onValue(currentRef, currentCallback);
+    }
+
+    loadBtn.addEventListener('click', loadLesson);
+    if (lessonCodeInput.value.trim()) {
+      loadLesson();
+    } else {
+      renderChart([0,0]);
+    }
+  </script>
+</body>
+</html>

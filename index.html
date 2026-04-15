@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wie oft ziehst du welche Farbe?</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --ok: #166534;
+      --okbg: #dcfce7;
+      --warn: #92400e;
+      --warnbg: #fef3c7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+    }
+    h1 { margin-top: 0; font-size: 1.8rem; }
+    p { line-height: 1.5; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .dice-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 640px) {
+      .dice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary { background: #111827; color: white; }
+    .secondary { background: #e5e7eb; color: #111827; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .note {
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+    .note.ok { background: var(--okbg); color: var(--ok); display: block; }
+    .note.warn { background: var(--warnbg); color: var(--warn); display: block; }
+    .small { color: var(--muted); font-size: 0.95rem; }
+    .sum {
+      margin-top: 12px;
+      font-weight: 700;
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <p style="font-size:1.8rem;"><strong>
+        Wie oft ziehst du welche Farbe?</p>
+		
+	  </div>
+     
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label for="lessonCode">Passwort</label>
+          <input id="lessonCode" type="text" placeholder="12" />
+        </div>
+        <div>
+          <label for="groupName">Gruppennummer</label>
+          <input id="groupName" type="text" placeholder="1" />
+        </div>
+      </div>
+
+      <div class="dice-grid">
+        <div>
+          <label for="n1">Wie oft hast du einen blauen Würfel gezogen?</label>
+          <input id="n1" type="number" min="0" step="1" value="0" />
+        </div>
+        <div>
+          <label for="n2">Wie oft hast du einen gelben Würfel gezogen?</label>
+          <input id="n2" type="number" min="0" step="1" value="0" />
+        </div>
+      </div>
+
+      <div class="sum" id="totalText">Anzahl der Ziehungen: 0</div>
+
+      <div class="actions">
+        <button class="primary" id="saveBtn">senden</button>
+        
+      </div>
+
+      <div id="message" class="note"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { ref, set, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js';
+
+    const lessonCodeInput = document.getElementById('lessonCode');
+    const groupNameInput = document.getElementById('groupName');
+    const ids = ['n1','n2'];
+    const message = document.getElementById('message');
+    const totalText = document.getElementById('totalText');
+    const saveBtn = document.getElementById('saveBtn');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const lessonFromUrl = urlParams.get('lesson') || '';
+    lessonCodeInput.value = lessonFromUrl;
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = 'note ' + type;
+    }
+
+    function getCounts() {
+      return ids.map(id => Math.max(0, Number(document.getElementById(id).value) || 0));
+    }
+
+    function updateTotal() {
+      const total = getCounts().reduce((a, b) => a + b, 0);
+      totalText.textContent = `Gesamtzahl der Würfe: ${total}`;
+    }
+
+    ids.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateTotal);
+    });
+    updateTotal();
+
+    saveBtn.addEventListener('click', async () => {
+      const lessonCode = lessonCodeInput.value.trim().toLowerCase();
+      const groupName = groupNameInput.value.trim();
+      const counts = getCounts();
+      const total = counts.reduce((a, b) => a + b, 0);
+
+      if (!lessonCode) {
+        showMessage('Bitte gebt zuerst das Passwort ein.', 'warn');
+        return;
+      }
+      if (!groupName) {
+        showMessage('Bitte gebt eine Gruppennummer ein.', 'warn');
+        return;
+      }
+      if (total === 0) {
+        showMessage('Bitte tragt mindestens eine Zahl größer als 0 ein.', 'warn');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Speichert ...';
+
+      const groupKey = groupName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+      const payload = {
+        lessonCode,
+        groupName,
+        counts: {
+          '1': counts[0],
+          '2': counts[1]
+        },
+        total,
+        updatedAt: Date.now(),
+        updatedAtServer: serverTimestamp()
+      };
+
+      try {
+        await set(ref(db, `lessons/${lessonCode}/groups/${groupKey}`), payload);
+        showMessage(`Gespeichert: ${groupName} hat ${total} Würfe eingetragen.`, 'ok');
+      } catch (error) {
+        console.error(error);
+        showMessage('Speichern nicht möglich. Bitte versucht es erneut oder fragt Frau Auer.', 'warn');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'senden';
+      }
+    });
+  </script>
+</body>
+</html>
