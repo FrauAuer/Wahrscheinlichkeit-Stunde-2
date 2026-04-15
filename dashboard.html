@@ -208,7 +208,9 @@
 
         const label = document.createElement('div');
         label.className = 'bar-label';
-        label.textContent = String(index + 1);
+
+        const labels = ['blau', 'gelb'];
+        label.textContent = labels[index];
 
         wrap.appendChild(valueLabel);
         wrap.appendChild(bar);
