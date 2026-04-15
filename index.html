@@ -246,7 +246,7 @@
       };
 
       try {
-        await set(ref(db, `lessons/${lessonCode}/groups/${groupKey}`), payload);
+        await set(ref(db, `Stunde2/${lessonCode}/groups/${groupKey}`), payload);
         showMessage(`Gespeichert: Gruppe ${groupName} hat ${total} Ziehungen eingetragen.`, 'ok');
       } catch (error) {
         console.error(error);
