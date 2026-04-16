@@ -114,7 +114,8 @@
   <div class="wrap">
     <div class="card">
       <p style="font-size:1.8rem;"><strong>
-        Wie oft ziehst du welche Farbe?</strong></p>
+        Wie oft ziehst du welche Farbe?</p>
+		
 	  </div>
      
 
@@ -122,15 +123,14 @@
       <div class="grid">
         <div>
           <label for="lessonCode">Passwort</label>
-          <input id="lessonCode" type="text" placeholder="33" />
+          <input id="lessonCode" type="text" placeholder="22" />
         </div>
         <div>
           <label for="groupName">Gruppennummer</label>
           <input id="groupName" type="text" placeholder="1" />
         </div>
-    <br>
       </div>
-      <p style="font-size:1.7rem;">Beutel 1</p>
+
       <div class="dice-grid">
         <div>
           <label for="n1">Wie oft hast du einen blauen Würfel gezogen?</label>
@@ -140,19 +140,9 @@
           <label for="n2">Wie oft hast du einen gelben Würfel gezogen?</label>
           <input id="n2" type="number" min="0" step="1" value="0" />
         </div>
-     <br>
       </div>
-      <p style="font-size:1.7rem;">Beutel 2</p>
-       <div class="dice-grid">
-        <div>
-          <label for="n3">Wie oft hast du einen blauen Würfel gezogen?</label>
-          <input id="n3" type="number" min="0" step="1" value="0" />
-        </div>
-        <div>
-          <label for="n4">Wie oft hast du einen gelben Würfel gezogen?</label>
-          <input id="n4" type="number" min="0" step="1" value="0" />
-        </div>
-      </div>
+
+      <div class="sum" id="totalText">Anzahl der Ziehungen: 0</div>
 
       <div class="actions">
         <button class="primary" id="saveBtn">senden</button>
@@ -169,7 +159,7 @@
 
     const lessonCodeInput = document.getElementById('lessonCode');
     const groupNameInput = document.getElementById('groupName');
-    const ids = ['n1','n2','n3','n4'];
+    const ids = ['n1','n2'];
     
     ids.forEach(id => {
   const input = document.getElementById(id);
@@ -188,6 +178,7 @@
 });
 
     const message = document.getElementById('message');
+    const totalText = document.getElementById('totalText');
     const saveBtn = document.getElementById('saveBtn');
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -202,6 +193,16 @@
     function getCounts() {
       return ids.map(id => Math.max(0, Number(document.getElementById(id).value) || 0));
     }
+
+    function updateTotal() {
+      const total = getCounts().reduce((a, b) => a + b, 0);
+      totalText.textContent = `Anzahl der Ziehungen: ${total}`;
+    }
+
+    ids.forEach(id => {
+      document.getElementById(id).addEventListener('input', updateTotal);
+    });
+    updateTotal();
 
     saveBtn.addEventListener('click', async () => {
       const lessonCode = lessonCodeInput.value.trim().toLowerCase();
@@ -244,9 +245,7 @@
         groupName,
         counts: {
           '1': counts[0],
-          '2': counts[1],
-          '3': counts[2],
-          '4': counts[3]
+          '2': counts[1]
         },
         total,
         updatedAt: Date.now(),
@@ -254,7 +253,7 @@
       };
 
       try {
-        await set(ref(db, `Stunde3/${lessonCode}/groups/${groupKey}`), payload);
+        await set(ref(db, `Stunde2/${lessonCode}/groups/${groupKey}`), payload);
         showMessage(`Gespeichert: Gruppe ${groupName} hat ${total} Ziehungen eingetragen.`, 'ok');
       } catch (error) {
         console.error(error);
