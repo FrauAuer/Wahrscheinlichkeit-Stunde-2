@@ -208,13 +208,13 @@
     saveBtn.addEventListener('click', async () => {
       const lessonCode = lessonCodeInput.value.trim().toLowerCase();
       const groupName = groupNameInput.value.trim();
-      const counts = getCounts();
-      const total = counts.reduce((a, b) => a + b, 0);
 
       if (!/^\d+$/.test(groupName)) {
-       showMessage('Bitte gebt eine gültige Gruppennummer (nur Zahlen) ein.', 'warn');
-       return;
+        showMessage('Bitte gebt eine gültige Gruppennummer (nur Zahlen) ein.', 'warn');
+        return;
       }
+      const counts = getCounts();
+      const total = counts.reduce((a, b) => a + b, 0);
 
       if (!lessonCode) {
         showMessage('Bitte gebt zuerst das Passwort ein.', 'warn');
