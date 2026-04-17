@@ -82,14 +82,6 @@ Das Tool unterstützt:
 
 ---
 
-## 🐞 Bekannte Probleme
-
-- Doppelte Variablendeklaration (`groupName`) in `index.html` → eine Zeile entfernen
-- Keine Validierung für unrealistisch große Zahlen
-- Kein Login-System (bewusst einfach gehalten)
-
----
-
 ## 🔧 Erweiterungsmöglichkeiten
 
 - Weitere Farben / Kategorien hinzufügen
