@@ -231,7 +231,7 @@
       emptyText.style.display = groups.length ? 'none' : 'block';
 
       groups
-        .sort((a, b) => (a.groupName || '').localeCompare(b.groupName || '', 'de'))
+        .sort((a, b) => Number(a.groupName) - Number(b.groupName))
         .forEach(group => {
           const tr = document.createElement('tr');
           const counts = group.counts || {};

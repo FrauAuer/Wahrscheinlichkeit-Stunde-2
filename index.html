@@ -127,7 +127,7 @@
         </div>
         <div>
           <label for="groupName">Gruppennummer</label>
-          <input id="groupName" type="text" placeholder="1" />
+          <input id="groupName" type="number" min="1" step="1" placeholder="1" />
         </div>
         <br>
       </div>
@@ -211,6 +211,11 @@
       const counts = getCounts();
       const total = counts.reduce((a, b) => a + b, 0);
 
+      if (!/^\d+$/.test(groupName)) {
+       showMessage('Bitte gebt eine gültige Gruppennummer (nur Zahlen) ein.', 'warn');
+       return;
+      }
+
       if (!lessonCode) {
         showMessage('Bitte gebt zuerst das Passwort ein.', 'warn');
         return;
@@ -227,12 +232,7 @@
       saveBtn.disabled = true;
       saveBtn.textContent = 'Speichert ...';
 
-      const groupKey = groupName
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+      const groupKey = groupName;
 
      if (!groupKey) {
         showMessage('Bitte gebt eine gültige Gruppennummer ein.', 'warn');

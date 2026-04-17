@@ -1,53 +1,111 @@
-# Digitale Datenerfassung und Visualisierung von Ergebnissen eines Zufallsexperiments
+# 📊 Wahrscheinlichkeit – Datenerfassung im Unterricht
 
-Diese Webanwendung dient der digitalen Erfassung und gemeinsamen Visualisierung von Gruppenergebnissen bei einem unterrichtlichen Zufallsexperiment mit zwei Kategorien.
+Dieses Projekt dient zur digitalen Erfassung und Auswertung von Zufallsexperimenten im Mathematikunterricht der Grundschule.
 
-## Bestandteile der Anwendung
+Schülerinnen und Schüler tragen ihre Ergebnisse (z. B. Würfelziehungen) über ein Eingabeformular ein.  
+Die Daten werden in Echtzeit gespeichert und anschließend im Dashboard visualisiert.
 
-Die Anwendung besteht aus drei Dateien:
+---
 
-- `index.html` – Eingabeseite für die Gruppen
-- `dashboard.html` – Auswertungsseite zur gemeinsamen Anzeige der Ergebnisse
-- `firebase-config.js` – Verbindungsdatei zur Firebase Realtime Database
+## 🚀 Funktionen
 
-## Funktionen
+### 🧑‍🎓 Eingabeseite (`index.html`)
+- Eingabe von:
+  - Passwort (Stundencode)
+  - Gruppennummer (nur Zahlen erlaubt)
+  - Anzahl gezogener Farben (z. B. blau / gelb)
+- Automatische Berechnung der Gesamtanzahl
+- Eingabefelder:
+  - „0“ verschwindet beim Klicken
+  - wird automatisch wieder gesetzt, wenn nichts eingegeben wird
+- Speicherung der Daten in Firebase
 
-### Eingabeseite
-Auf der Eingabeseite geben die Gruppen ihr Passwort, ihre Gruppennummer sowie die Anzahl der gezogenen blauen und gelben Würfel ein. Aus den beiden Eingabewerten wird automatisch die Gesamtzahl der Ziehungen berechnet und angezeigt. Nach dem Absenden werden die Daten in der Firebase Realtime Database gespeichert.
+---
 
-### Auswertungsseite
-Die Auswertungsseite lädt die gespeicherten Gruppenergebnisse zu einem gewählten Passwort und stellt diese in zwei Formen dar:
+### 📊 Dashboard (`dashboard.html`)
+- Anzeige aller Gruppenergebnisse
+- Automatische Aktualisierung (Realtime-Daten)
+- Visualisierung:
+  - Säulendiagramm (blau / gelb)
+- Übersicht:
+  - Anzahl der Gruppen
+  - Gesamtanzahl der Ziehungen
+- Sortierung der Gruppen nach Gruppennummer
 
-- als Säulendiagramm mit zwei Balken
-- als tabellarische Übersicht der einzelnen Gruppenergebnisse
+---
 
-Zusätzlich werden zwei Kennwerte angezeigt:
+### 🔥 Firebase-Anbindung (`firebase-config.js`)
+- Verbindung zur Firebase Realtime Database
+- Speicherung der Datenstruktur:
 
-- Anzahl der Gruppen
-- Gesamtzahl aller eingetragenen Ziehungen
+```
+Stunde2/
+  └── [lessonCode]/
+       └── groups/
+            └── [groupNumber]/
+                 ├── counts
+                 ├── total
+                 ├── updatedAt
+```
 
-## Datenstruktur
+---
 
-Für jede Gruppe werden folgende Informationen gespeichert:
+## 🛠️ Installation & Nutzung
 
-- Passwort der Erhebung
-- Gruppennummer
-- Anzahl der Ziehungen in Kategorie 1
-- Anzahl der Ziehungen in Kategorie 2
-- Gesamtzahl der Ziehungen
-- Zeitstempel der Speicherung
+1. Firebase-Projekt erstellen
+2. Zugangsdaten in `firebase-config.js` eintragen  
+3. Dateien hochladen (z. B. Firebase Hosting):
+   - index.html
+   - dashboard.html
+4. Webseite öffnen:
+   - Eingabeseite für Schüler
+   - Dashboard für Lehrkraft
 
-Die Daten werden unter dem jeweiligen Passwort in der Realtime Database gruppiert abgelegt.
+---
 
-## Visualisierung
+## ⚠️ Wichtige Hinweise
 
-Das Säulendiagramm zeigt die aufsummierten Ergebnisse aller Gruppen in zwei Balken:
+- Gruppennummern sind nur als Zahlen erlaubt
+- Passwort dient zur Trennung verschiedener Unterrichtsstunden
+- Daten werden überschrieben, wenn gleiche Gruppe erneut speichert
+- Internetverbindung erforderlich
 
-- erster Balken: blau
-- zweiter Balken: gelb
+---
 
-Die Höhe der Balken wird automatisch an die größte vorhandene Gesamthäufigkeit angepasst.
+## 🧠 Didaktischer Einsatz
 
-## Technische Grundlage
+Das Tool unterstützt:
+- handlungsorientierten Mathematikunterricht
+- Arbeit mit Zufallsexperimenten
+- Vergleich von Häufigkeiten
+- Förderung mathematischer Argumentation
 
-Die Anwendung ist als statische Webanwendung auf HTML-, CSS- und JavaScript-Basis umgesetzt. Die Datenspeicherung und Synchronisation erfolgt über Firebase Realtime Database. Änderungen an den eingegebenen Gruppendaten werden auf der Auswertungsseite in Echtzeit übernommen.
+---
+
+## 🐞 Bekannte Probleme
+
+- Doppelte Variablendeklaration (`groupName`) in `index.html` → eine Zeile entfernen
+- Keine Validierung für unrealistisch große Zahlen
+- Kein Login-System (bewusst einfach gehalten)
+
+---
+
+## 🔧 Erweiterungsmöglichkeiten
+
+- Weitere Farben / Kategorien hinzufügen
+- Diagramm erweitern (Prozentwerte)
+- Export als CSV
+- Mehrere Unterrichtseinheiten parallel verwalten
+
+---
+
+## 👩‍🏫 Autorin
+
+Leonie Auer  
+Lehramtsanwärterin (Primarstufe)
+
+---
+
+## 📄 Lizenz
+
+Nur für schulische und private Nutzung gedacht.
