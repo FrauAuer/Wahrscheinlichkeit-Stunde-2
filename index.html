@@ -230,7 +230,7 @@
       }
 
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Speichert ...';
+      saveBtn.textContent = 'speichert ...';
 
       const groupKey = groupName;
 
@@ -255,7 +255,7 @@
 
       try {
         await set(ref(db, `Stunde2/${lessonCode}/groups/${groupKey}`), payload);
-        showMessage(`Gespeichert: Gruppe ${groupName} hat ${total} Ziehungen eingetragen.`, 'ok');
+        showMessage(`gespeichert: Gruppe ${groupName} hat ${total} Ziehungen eingetragen.`, 'ok');
       } catch (error) {
         console.error(error);
         showMessage('Speichern nicht möglich. Bitte versucht es erneut oder fragt Frau Auer.', 'warn');
